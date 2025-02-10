@@ -20,8 +20,8 @@ Referensi : [Factors Affecting the Consumers Buying Behavior with Reference to L
 ### Problem Statement
 
 Dalam industri elektronik, harga laptop sangat bervariasi tergantung pada berbagai faktor seperti spesifikasi, merek, dan fitur tambahan. Oleh karena itu, membangun model prediksi harga laptop yang akurat dapat membantu konsumen dan penjual dalam mengambil keputusan. Berdasarkan permasalahan tersebut, beberapa pernyataan masalah yang diangkat adalah:
-1. Bagaimana faktor-faktor spesifikasi seperti Merk dan Tipe Laptop memengaruhi harga laptop?
-2. Bagaimana faktor berat dari Tipe Laptop di tiap Merknya?
+1. Bagaimana faktor-faktor seperti Merk dan Tipe Laptop memengaruhi harga laptop?
+2. Bagaimana berat dan tipe laptop bervariasi berdasarkan mereknya?
 3. Seberapa akurat model machine learning dalam memprediksi harga laptop berdasarkan fitur yang tersedia?
 4. Bagaimana performa model XGBoost Regressor dan Random Forest Regressor dalam melakukan prediksi harga laptop?
 5. Apakah tuning hyperparameter dapat meningkatkan akurasi model dibandingkan dengan model baseline?
@@ -30,10 +30,11 @@ Dalam industri elektronik, harga laptop sangat bervariasi tergantung pada berbag
 
 Berdasarkan pernyataan masalah di atas, tujuan dari proyek ini adalah:
 
-1. Menganalisis faktor-faktor utama yang berkontribusi terhadap harga laptop berdasarkan dataset yang tersedia.
-2. Membangun model prediksi harga laptop menggunakan algoritma XGBoost Regressor dan Random Forest Regressor untuk menentukan laptop mana yang memiliki harga sesuai dengan spesifikasinya.
-3. Membandingkan performa model sebelum dan sesudah tuning hyperparameter dengan menggunakan metrik evaluasi seperti Mean Squared Error (MSE), Root Mean Squared Error (RMSE), Mean Absolute Error (MAE), dan R² Score.
-4. Menghasilkan model dengan performa terbaik yang dapat digunakan untuk estimasi harga laptop secara otomatis.
+1. Menganalisis faktor-faktor utama seperti Merk dan Tipe Laptop yang berkontribusi terhadap harga laptop.
+2. Melakukan analisis untuk memahami bagaimana berat dan tipe laptop bervariasi berdasarkan mereknya.
+3. Membangun model prediksi harga laptop menggunakan algoritma XGBoost Regressor dan Random Forest Regressor untuk menentukan laptop mana yang memiliki harga sesuai dengan spesifikasinya berdasarkan dataset yang tersedia.
+4. Membandingkan performa model sebelum dan sesudah tuning hyperparameter dengan menggunakan metrik evaluasi seperti Mean Squared Error (MSE), Root Mean Squared Error (RMSE), Mean Absolute Error (MAE), dan R² Score.
+5. Meningkatkan performa model menggunakan RandomizedSearchCV untuk hyperparameter tuning, lalu membandingkan hasilnya dengan baseline model.
 
 ### Solution Statements
 
@@ -52,6 +53,13 @@ Dataset yang digunakan dalam proyek ini berisi informasi mengenai spesifikasi la
 
 Dataset ini dapat digunakan untuk menganalisis faktor-faktor yang mempengaruhi harga laptop serta membangun model prediksi harga yang lebih akurat.
 [Laptop Price Prediction](https://www.kaggle.com/datasets/eslamelsolya/laptop-price-prediction/data)
+
+### Jumlah data:
+shape awalnya yaitu (1303, 11), jadi 1303 baris dan 11 kolom
+
+Kemudian setelah melakukan assessing dataset ditemukan duplikat, dan dataset bersihnya menjadi 
+
+(1274, 11), 1274 baris dan 11 kolom
 
 ### Variabel-variabel pada Laptop Price Prediction dataset adalah sebagai berikut:
 Berikut adalah deskripsi dari setiap fitur yang terdapat dalam dataset:
@@ -72,35 +80,98 @@ Berikut adalah deskripsi dari setiap fitur yang terdapat dalam dataset:
 Untuk memahami dataset lebih dalam, dilakukan beberapa tahapan Exploratory Data Analysis (EDA), seperti:
 
 1. Melihat korelasi fitur antara Company dan Tipe Laptop terhadap Harga laptop.
+   **Penjelasan Bar Chart dari komponen Company & Price**
+
+- **Razer** memiliki harga rata-rata tertinggi dengan variasi harga yang besar, menunjukkan adanya produk dalam berbagai kategori harga. 
+- **Apple, LG, MSI, dan Google** cenderung memiliki harga rata-rata tinggi dibandingkan merek lain.  
+- **HP, Lenro, dan MediaCom** memiliki harga rata-rata terendah, menunjukkan kemungkinan fokus pada pasar low-end.  
+- Rentang erroovo, Dell, dan Asus** berada dalam kategori harga menengah.  
+- **Chuwi, Ver bars yang besar pada beberapa merek (seperti Razer dan Microsoft) mengindikasikan variasi harga yang signifikan dalam produk mereka.
+
+**Analisis Harga Tipe Laptop Berdasarkan tipe laptop**
+
+- **Perbedaan harga antar tipe laptop cukup signifikan**, terutama untuk tipe **Gaming** dan **Workstation**, yang umumnya memiliki harga lebih tinggi dibanding tipe lainnya.  
+- **Razer memiliki harga Gaming laptop tertinggi**, sementara **Workstation dari beberapa brand seperti HP dan Lenovo juga cukup mahal**.  
+- **Notebook dan Ultrabook tersebar merata di berbagai perusahaan dengan harga yang lebih terjangkau** dibandingkan Gaming atau Workstation.  
+- **Beberapa perusahaan seperti Apple, Microsoft, dan Huawei lebih fokus pada segmen Ultrabook**, sementara perusahaan seperti MSI dan Asus lebih banyak memiliki laptop Gaming.  
+- **Vero dan MediaCom memiliki harga laptop yang relatif lebih rendah**, kemungkinan menyasar pasar entry-level. 
+
 2. Melihat korelasi fitur antara berat dengan harga laptop.
+   
+   **Analisis Berat dari Tipe Laptop Berdasarkan Perusahaan**
+
+- Laptop Gaming umumnya lebih berat, terutama pada brand seperti Asus, Dell, dan Lenovo.
+- Ultrabook cenderung lebih ringan dibandingkan tipe lain.
+- Beberapa brand memiliki variasi laptop yang luas, seperti HP, Dell, dan Lenovo yang menawarkan berbagai tipe laptop dengan berat yang berbeda.
+- Brand seperti Apple dan Microsoft memiliki laptop dengan bobot yang lebih ringan, kemungkinan karena mereka lebih fokus pada ultrabook atau perangkat tipis.
+  
 3. Melihat korelasi antara fitur dan harga laptop menggunakan heatmap correlation untuk mengidentifikasi fitur mana yang memiliki hubungan kuat dengan harga.
-4. Melakukan data featuring, seperti encoding untuk fitur kategorikal, label encoding, serta menggunakan log transformation (np.log) untuk mengubah distribusi harga menjadi lebih normal.
+Korelasi positif yang bisa dilihat dengan jelas yaitu antara 'Weight' dan 'Inches' kemudian antara 'Price' dan 'RAM'
+
+
+   Dalam dataset awal masih terdapat fitur kategorikal, model machine learning tidak dapat langsung memahami data dalam format teks, sehingga diperlukan proses encoding untuk mengubahnya menjadi nilai numerik.
 
 ## Data Preparation
 Beberapa hal yang dilakukan dalam data preparation, yaitu:
 
-1. Encoding Features
+1. Handling Data Duplikat
+   Saat melakukan assessing data, terdapat data duplikat yang harus diselesaikan.
+2. Encoding Features
    Teknik encoding yang digunakan yaitu LabelEncoding.
-2. Memisahkan Fitur (X) dan Target (y) dengan Log Transformation
+3. Memisahkan Fitur (X) dan Target (y) dengan Log Transformation
    Menggunakan log transformation (np.log) untuk mengubah distribusi harga menjadi lebih normal.
-3. Membagi Dataset dengan train_test_split
+4. Membagi Dataset dengan train_test_split
    Agar model bisa diuji pada data baru yang belum pernah dilihat sebelumnya. random_state=42 digunakan agar hasil split selalu konsisten.
-4. standarisasi
+5. standarisasi
 
 ## Modeling
-Dalam proyek ini, saya menggunakan dua algoritma machine learning untuk memprediksi harga laptop, yaitu:
+Dalam proyek ini menggunakan dua algoritma machine learning untuk memprediksi harga laptop, yaitu:
 
 1. XGBoost Regressor
+   
+   XGBoost Regressor menggunakan teknik gradient boosting untuk meningkatkan akurasi dengan meminimalkan kesalahan secara bertahap. Parameter utama yang digunakan adalah n_estimators=100, max_depth=5, dan learning_rate=0.1.
+   
 2. Random Forest Regressor
 
-Setelah melakukan training dengan parameter default, saya melakukan improvement model dengan hyperparameter tuning menggunakan RandomizedSearchCV.
+   Random Forest Regressor adalah metode bagging yang menggabungkan banyak pohon keputusan untuk meningkatkan kestabilan prediksi. Parameter yang digunakan adalah n_estimators=100 dan max_depth=5.
+
+**Tuning**
+
+Tuning yang digunakan untuk meningkatkan performa model yaitu RandomizedSearchCV dengan menentukan parameter yang akan diuji.
+
+**XGBoost Regressor**
+
+- max_depth → Menentukan kedalaman pohon keputusan dalam XGBoost.
+- learning_rate → Mengontrol seberapa besar model belajar dari error sebelumnya.
+- n_estimators → Jumlah pohon yang digunakan dalam boosting.
+- min_child_weight → Mengontrol ukuran minimum node untuk mengurangi overfitting.
+- subsample → Persentase data yang digunakan dalam setiap iterasi boosting.
+- colsample_bytree → Persentase fitur yang dipilih dalam setiap pohon.
+
+**Random Forest Regressor**
+
+- max_depth → Menentukan kedalaman maksimum pohon dalam hutan.
+- n_estimators → Jumlah pohon dalam model Random Forest.
+- min_samples_split → Jumlah minimum sampel yang dibutuhkan untuk membagi node.
+- min_samples_leaf → Jumlah minimum sampel pada setiap leaf node.
+- bootstrap → Menentukan apakah akan menggunakan bootstrap sampling atau tidak.
+
+Agar tuning lebih cepat dibandingkan Grid Search (yang mencoba semua kombinasi), digunakan RandomizedSearchCV, yang mencoba 20 kombinasi acak dari parameter yang telah ditentukan.
+
+Setelah menjalankan RandomizedSearchCV, didapatkan parameter terbaik untuk setiap model.
+
+XGB_tuned Best Parameters: {'subsample': 0.8, 'n_estimators': 300, 'min_child_weight': 5, 'max_depth': 5, 'learning_rate': 0.1, 'colsample_bytree': 0.8}
+
+RF_tuned Best Parameters: {'n_estimators': 100, 'min_samples_split': 10, 'min_samples_leaf': 1, 'max_depth': 9, 'bootstrap': True}
+
+Setelah melakukan training dengan parameter default, selanjutnya melakukan improvement model dengan hyperparameter tuning menggunakan RandomizedSearchCV.
 - XGBoost lebih baik dibandingkan Random Forest, karena memiliki MSE yang lebih kecil dan R² yang lebih tinggi.
 - Setelah tuning, kedua model mengalami peningkatan performa secara signifikan.
 - XGBoost lebih unggul dalam menangani data ini karena setelah tuning, R² mencapai 0.9103, menunjukkan model ini bisa menjelaskan ~91% variabilitas data.
 
 ## Evaluation
 
-Dalam proyek ini, saya menggunakan model regresi untuk memprediksi harga laptop berdasarkan fitur-fitur seperti spesifikasi perangkat keras, sistem operasi, dan faktor lainnya. Oleh karena itu, metrik evaluasi yang digunakan harus sesuai dengan model regresi, yang berbeda dengan metrik untuk klasifikasi seperti akurasi, precision, atau recall.
+Dalam proyek ini menggunakan model regresi untuk memprediksi harga laptop berdasarkan fitur-fitur seperti spesifikasi perangkat keras, sistem operasi, dan faktor lainnya. Oleh karena itu, metrik evaluasi yang digunakan harus sesuai dengan model regresi, yang berbeda dengan metrik untuk klasifikasi seperti akurasi, precision, atau recall.
 
 |            Model          | MSE |    RMSE        |                    MAE                    |                                                       R2 Score                                                      |
 | :-------------------------: | :--------: | :----------------: | :----------------------------------------: | :-----------------------------------------------------------------------------------------------------------------: |
@@ -110,3 +181,26 @@ Dalam proyek ini, saya menggunakan model regresi untuk memprediksi harga laptop 
 |      Random Forest Tuned        | 0.0504 | 0.2244     |    0.1709  |    0.8679    |
          
 
+Model yang telah dievaluasi berhasil menjawab setiap problem statement dan mencapai goals yang ditetapkan.
+
+1. Analisis Faktor yang Mempengaruhi Harga Laptop
+
+Hasil eksplorasi menunjukkan bahwa Merk dan Tipe Laptop memiliki pengaruh terhadap harga. Hal ini sesuai dengan tujuan untuk menganalisis faktor utama yang memengaruhi harga laptop.
+
+2. Analisis Berat dan Tipe Laptop Berdasarkan Merek
+
+Distribusi berat dan tipe laptop telah dianalisis berdasarkan merek, menunjukkan bahwa ultrabook cenderung lebih ringan dibandingkan tipe lain. Analisis ini membantu memahami bagaimana berat dan tipe laptop bervariasi berdasarkan mereknya.
+
+3. Membangun Model Prediksi Harga Laptop
+
+Model XGBoost Regressor dan Random Forest Regressor berhasil digunakan untuk memprediksi harga laptop.
+Model mampu memperkirakan harga laptop berdasarkan spesifikasi dengan akurasi tinggi, sesuai dengan tujuan proyek.
+
+4. Evaluasi Performa Model Sebelum dan Sesudah Hyperparameter Tuning
+
+Metrik evaluasi menunjukkan bahwa XGBoost lebih unggul dibandingkan Random Forest, dengan MSE = 0.0342 dan R² = 0.9103 setelah tuning.
+Perbandingan performa sebelum dan sesudah tuning menunjukkan peningkatan akurasi.
+
+5. Peningkatan Model dengan Hyperparameter Tuning
+
+Penggunaan RandomizedSearchCV meningkatkan performa model, membuktikan bahwa tuning parameter memberikan hasil lebih baik dibandingkan model baseline.
